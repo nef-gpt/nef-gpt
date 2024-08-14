@@ -12,6 +12,8 @@ dependencies = [
     "lightning>=2.4.0",
     "ray[tune]>=2.34.0",
     "torchtyping>=0.1.5",
+    "vector-quantize-pytorch>=1.15.6",
+    "ipykernel>=6.29.5",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"

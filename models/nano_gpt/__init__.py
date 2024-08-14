@@ -7,7 +7,7 @@ from torch import nn
 import torch.nn.functional as F
 import torch
 import tqdm
-from components import Block, LayerNorm, PositionalEncoding
+from .components import Block, LayerNorm, PositionalEncoding
 
 
 @dataclass
@@ -27,6 +27,43 @@ class NanoGPTConfig:
     max_len: Optional[int] = (
         None  # 36737  # maximum number of tokens in a sequence (for global positional encoding)
     )
+
+    @staticmethod
+    def from_preset(type: str):
+        return presets[type]
+
+
+block_size = 3712
+cb_size = 127
+presets = {
+    "big": NanoGPTConfig(
+        n_embd=512,
+        block_size=block_size,
+        n_head=16,
+        n_layer=8,
+        vocab_size=cb_size + 1,
+        dropout=0.0,
+        max_len=None,
+    ),
+    "small": NanoGPTConfig(
+        n_embd=256,
+        block_size=block_size,
+        n_head=16,
+        n_layer=6,
+        vocab_size=cb_size + 1,
+        dropout=0.0,
+        max_len=None,
+    ),
+    "medium": NanoGPTConfig(
+        n_embd=384,
+        block_size=block_size,
+        n_head=16,
+        n_layer=7,
+        vocab_size=cb_size + 1,
+        dropout=0.0,
+        max_len=None,
+    ),
+}
 
 
 class NanoGPT(nn.Module):
