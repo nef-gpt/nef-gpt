@@ -7,8 +7,10 @@ from torch.utils.data import random_split
 
 from data.dataset import ShapeNetDataset
 from vector_quantize_pytorch import ResidualVQ
+from einops import rearrange
 
-from data.tokenization import TokenTransform3D
+from data.tokenizer import ScalarTokenizer
+from data.transforms import TokenTransform3D
 
 # Implement a pytorch lightning datamodule for the ShapeNetDataset class in data/loader.py
 # This module functions as following:
@@ -19,7 +21,8 @@ class ShapeNetDataConfig:
     mlps_folder: str
     vector_quantize_pth: str
     tmp_folder: str = "tmp"
-    batch_size: int = 32
+    batch_size: int = 2
+    force_recompute: bool = False
 
 
 class ShapeNetData(pl.LightningModule):
@@ -27,25 +30,13 @@ class ShapeNetData(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-    def load_rvq(self):
-        rq_dict = torch.load(
-            self.hparams.data_config.vector_quantize_pth, map_location=self.device
-        )
-        rq_dict.keys()
-
-        state_dict = rq_dict["state_dict"]
-        rq_config = rq_dict["rq_config"]
-
-        rvq = ResidualVQ(**rq_config)
-        rvq.load_state_dict(state_dict)
-
-        return rvq
-
     def prepare_data(self):
 
         # Token transform
-        rvq = self.load_rvq()
-        self.token_transform = TokenTransform3D(rvq)
+        self.tokenizer = ScalarTokenizer.load_from_file(
+            self.hparams.data_config.vector_quantize_pth, self.device
+        )
+        self.token_transform = TokenTransform3D(self.tokenizer)
 
         dataset = ShapeNetDataset(
             self.hparams.data_config.mlps_folder,
@@ -57,17 +48,24 @@ class ShapeNetData(pl.LightningModule):
         # take only the tensors, concatenate them and save them to disk
         # this is a one-time operation
         # TODO: Get the hash for the dataset (hash of the mlps_folder)
-
+        # NOTE currently this is handled by the force_recompute flag
         def do_dataset(dataset, stage: str):
-            loaded_dataset_y = torch.stack(
-                # TODO: this is bulsshit
-                [dataset[i].view(-1) for i in range(len(dataset))],
-                dim=0,
-            )
             if not os.path.exists(self.hparams.data_config.tmp_folder):
                 os.makedirs(self.hparams.data_config.tmp_folder)
-            path = f"{self.hparams.data_config.tmp_folder}/{stage}.pt"
-            torch.save(loaded_dataset, path)
+            # only save if it doesn't exist
+            if self.hparams.data_config.force_recompute or not os.path.exists(
+                f"{self.hparams.data_config.tmp_folder}/{stage}.pt"
+            ):
+                path = f"{self.hparams.data_config.tmp_folder}/{stage}.pt"
+                loaded_dataset = torch.stack(
+                    # TODO: this is bulsshit
+                    [torch.stack(dataset[i]) for i in range(len(dataset))],
+                    dim=0,
+                )
+                # rearrange the data, currently it is [N, (X, Y), L] where L is the length of the sequence, N is the number of samples, X is the input and Y is the output
+                # we want to have [(X, Y), N, L]
+                loaded_dataset = rearrange(loaded_dataset, "N T L -> T N L")
+                torch.save(loaded_dataset, path)
 
         generator = torch.Generator().manual_seed(42)
         splits = random_split(dataset, [0.8, 0.15, 0.05], generator)
@@ -78,16 +76,25 @@ class ShapeNetData(pl.LightningModule):
         # load it back here
         # stage is {fit,validate,test,predict}
         if stage == "fit":
-            self.train_data = torch.load(
-                f"{self.hparams.data_config.tmp_folder}/train.pt"
+            data = torch.load(
+                f"{self.hparams.data_config.tmp_folder}/train.pt", weights_only=True
             )
-            self.val_data = torch.load(f"{self.hparams.data_config.tmp_folder}/val.pt")
+            self.train_data = torch.utils.data.TensorDataset(data[0], data[1])
+
+            data = torch.load(
+                f"{self.hparams.data_config.tmp_folder}/val.pt", weights_only=True
+            )
+            self.val_data = torch.utils.data.TensorDataset(data[0], data[1])
         elif stage == "test":
-            self.test_data = torch.load(
-                f"{self.hparams.data_config.tmp_folder}/test.pt"
+            data = torch.load(
+                f"{self.hparams.data_config.tmp_folder}/test.pt", weights_only=True
             )
+            self.test_data = torch.utils.data.TensorDataset(data[0], data[1])
         elif stage == "validate":
-            self.val_data = torch.load(f"{self.hparams.data_config.tmp_folder}/val.pt")
+            data = torch.load(
+                f"{self.hparams.data_config.tmp_folder}/val.pt", weights_only=True
+            )
+            self.val_data = torch.utils.data.TensorDataset(data[0], data[1])
         else:
             raise ValueError(f"Stage {stage} not recognized")
 

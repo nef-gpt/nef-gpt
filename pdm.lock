@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:18f4f0cdff1d465edad4097c170717efdb02f8a9a4f3a55a7b63d706c072d78a"
+content_hash = "sha256:d2628c813589900071b647a6449bc9a4d131e8f1df78012af9fa5d37377fc0e9"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -286,7 +286,6 @@ version = "1.2.2"
 requires_python = ">=3.7"
 summary = "Backport of PEP 654 (exception groups)"
 groups = ["default"]
-marker = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
     {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},

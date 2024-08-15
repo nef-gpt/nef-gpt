@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 from vector_quantize_pytorch import VectorQuantize
 
+from data.tokenizer import Tokenizer
+
 
 # class ModelTransform3D(torch.nn.Module):
 #     def __init__(self, weights_dict: dict = mlp_kwargs):
@@ -17,7 +19,7 @@ from vector_quantize_pytorch import VectorQuantize
 #         else:
 #             model = MLP3D(**self.weights_dict)
 #             model.load_state_dict(state_dict)
-#         return model, y
+#         return model, y]
 
 
 class FlattenTransform3D(torch.nn.Module):
@@ -73,31 +75,30 @@ class ImageTransform3D(nn.Module):
         return model_dict
 
 
-class TrainingTransform3D(nn.Module):
+class TrainingTransform3D:
     """
     Takes a token sequence and returns a pair of the token sequence and the target token sequence
     (shifted by one position)
     """
 
-    def __init__(self, sos: int):
-        self.start_tokens = torch.tensor([sos]).to(torch.long)
+    def __init__(self):
+        # self.start_tokens = torch.tensor([sos]).to(torch.long)
+        pass
 
     def forward(self, indices, y):
-        sample = torch.cat([self.start_tokens, indices[:]])
-
-        X = sample[:-1]  # exclude last token
-        Y = sample[1:]  # exclude first token
+        X = indices[:-1]  # exclude last token
+        Y = indices[1:]  # exclude first token
 
         return X, Y
 
 
 # Transform that uses vq, first flatten data, then use vq for quantization and return indices and label
 class TokenTransform3D(nn.Module):
-    def __init__(self, vq: VectorQuantize, sos: int, condition: torch.Tensor = None):
+    def __init__(self, tokenizer: Tokenizer, condition: torch.Tensor = None):
         super().__init__()
         self.flatten = ImageTransform3D()
-        self.training_transform = TrainingTransform3D(sos)
-        self.vq = vq
+        self.tokenizer = tokenizer
+        self.training_transform = TrainingTransform3D()
         self.condition = condition
         self.eval()
 
@@ -107,21 +108,12 @@ class TokenTransform3D(nn.Module):
         if self.condition is not None:
             weights = weights - self.condition.to(weights)
         self.target_shape = weights.shape
-        with torch.no_grad():
-            flattened_weights = weights.view(-1, self.vq.layers[0].dim)
-            _x, indices, _commit_loss = self.vq(flattened_weights, freeze_codebook=True)
-
-            return self.training_transform(indices, y)
+        tokens = self.tokenizer.encode_sequence(weights)
+        return self.training_transform.forward(tokens, y)
 
     def inverse(self, indices):
-        quantized = self.vq.get_codes_from_indices(indices)
-        # quantized_reshaped = quantized.view(-1, self.vq.dim)
-
+        quantized = self.tokenizer.decode_sequence(indices)
         quantized = quantized.reshape(self.target_shape)
-
         if self.condition is not None:
             return self.flatten.inverse(quantized + self.condition.to(quantized))
         return self.flatten.inverse(quantized)
-
-    def backproject(self, indices):
-        return self.vq.get_codes_from_indices(indices)
