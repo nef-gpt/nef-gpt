@@ -33,6 +33,8 @@ def main():
         log_every_n_steps=2,
         logger=logger,
         profiler="simple",
+        # Performance stuff
+        precision="bf16-mixed",
     )
     trainer.fit(model, datamodule=data)
 

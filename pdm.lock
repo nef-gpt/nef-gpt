@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:53424d0692e06175c837ebe61549d037c61d920ad17e6371268e3734353d73de"
+content_hash = "sha256:07c4d8dd5a73dcd5bf2d4eb0a7d2c9aae41b30364dae19f33bee9e3c44f8e5ae"
 
 [[metadata.targets]]
 requires_python = "==3.10.*"
@@ -267,6 +267,17 @@ files = [
 ]
 
 [[package]]
+name = "docstring-parser"
+version = "0.16"
+requires_python = ">=3.6,<4.0"
+summary = "Parse Python docstrings in reST, Google and Numpydoc format"
+groups = ["default"]
+files = [
+    {file = "docstring_parser-0.16-py3-none-any.whl", hash = "sha256:bf0a1387354d3691d102edef7ec124f219ef639982d096e26e3b60aeffa90637"},
+    {file = "docstring_parser-0.16.tar.gz", hash = "sha256:538beabd0af1e2db0146b6bd3caa526c35a34d61af9fd2887f3a8a27a739aa6e"},
+]
+
+[[package]]
 name = "einops"
 version = "0.8.0"
 requires_python = ">=3.8"
@@ -437,6 +448,20 @@ files = [
 ]
 
 [[package]]
+name = "importlib-resources"
+version = "6.4.2"
+requires_python = ">=3.8"
+summary = "Read resources from Python packages"
+groups = ["default"]
+dependencies = [
+    "zipp>=3.1.0; python_version < \"3.10\"",
+]
+files = [
+    {file = "importlib_resources-6.4.2-py3-none-any.whl", hash = "sha256:8bba8c54a8a3afaa1419910845fa26ebd706dc716dd208d9b158b4b6966f5c5c"},
+    {file = "importlib_resources-6.4.2.tar.gz", hash = "sha256:6cbfbefc449cc6e2095dd184691b7a12a04f40bc75dd4c55d31c34f174cdf57a"},
+]
+
+[[package]]
 name = "ipykernel"
 version = "6.29.5"
 requires_python = ">=3.8"
@@ -512,6 +537,54 @@ dependencies = [
 files = [
     {file = "jinja2-3.1.4-py3-none-any.whl", hash = "sha256:bc5dd2abb727a5319567b7a813e6a2e7318c39f4f487cfe6c89c6f9c7d25197d"},
     {file = "jinja2-3.1.4.tar.gz", hash = "sha256:4a3aee7acbbe7303aede8e9648d13b8bf88a429282aa6122a993f0ac800cb369"},
+]
+
+[[package]]
+name = "jsonargparse"
+version = "4.32.0"
+requires_python = ">=3.7"
+summary = "Implement minimal boilerplate CLIs derived from type hints and parse from command line, config files and environment variables."
+groups = ["default"]
+dependencies = [
+    "PyYAML>=3.13",
+]
+files = [
+    {file = "jsonargparse-4.32.0-py3-none-any.whl", hash = "sha256:2da92d37be875b91672ce117eecfcd4ed9841fae099d8081d3cf819703d7de1a"},
+    {file = "jsonargparse-4.32.0.tar.gz", hash = "sha256:a93f29506e9780b28fc6854c3b3718f4a74d92bf7f0c1f4c34e3047cd5d8be42"},
+]
+
+[[package]]
+name = "jsonargparse"
+version = "4.32.0"
+extras = ["signatures"]
+requires_python = ">=3.7"
+summary = "Implement minimal boilerplate CLIs derived from type hints and parse from command line, config files and environment variables."
+groups = ["default"]
+dependencies = [
+    "docstring-parser>=0.15",
+    "jsonargparse==4.32.0",
+    "jsonargparse[typing-extensions]",
+    "typeshed-client>=2.1.0",
+]
+files = [
+    {file = "jsonargparse-4.32.0-py3-none-any.whl", hash = "sha256:2da92d37be875b91672ce117eecfcd4ed9841fae099d8081d3cf819703d7de1a"},
+    {file = "jsonargparse-4.32.0.tar.gz", hash = "sha256:a93f29506e9780b28fc6854c3b3718f4a74d92bf7f0c1f4c34e3047cd5d8be42"},
+]
+
+[[package]]
+name = "jsonargparse"
+version = "4.32.0"
+extras = ["typing-extensions"]
+requires_python = ">=3.7"
+summary = "Implement minimal boilerplate CLIs derived from type hints and parse from command line, config files and environment variables."
+groups = ["default"]
+dependencies = [
+    "jsonargparse==4.32.0",
+    "typing-extensions>=3.10.0.0; python_version < \"3.10\"",
+]
+files = [
+    {file = "jsonargparse-4.32.0-py3-none-any.whl", hash = "sha256:2da92d37be875b91672ce117eecfcd4ed9841fae099d8081d3cf819703d7de1a"},
+    {file = "jsonargparse-4.32.0.tar.gz", hash = "sha256:a93f29506e9780b28fc6854c3b3718f4a74d92bf7f0c1f4c34e3047cd5d8be42"},
 ]
 
 [[package]]
@@ -1611,6 +1684,21 @@ groups = ["default"]
 files = [
     {file = "typeguard-2.13.3-py3-none-any.whl", hash = "sha256:5e3e3be01e887e7eafae5af63d1f36c849aaa94e3a0112097312aabfa16284f1"},
     {file = "typeguard-2.13.3.tar.gz", hash = "sha256:00edaa8da3a133674796cf5ea87d9f4b4c367d77476e185e80251cc13dfbb8c4"},
+]
+
+[[package]]
+name = "typeshed-client"
+version = "2.7.0"
+requires_python = ">=3.8"
+summary = "A library for accessing stubs in typeshed."
+groups = ["default"]
+dependencies = [
+    "importlib-resources>=1.4.0",
+    "typing-extensions>=4.5.0",
+]
+files = [
+    {file = "typeshed_client-2.7.0-py3-none-any.whl", hash = "sha256:97084e5abc58a76ace2c4618ecaebd625f2d19bbd85aa1b3fb86216bf174bbea"},
+    {file = "typeshed_client-2.7.0.tar.gz", hash = "sha256:e63df1e738588ad39f1226de042f4407ab6a99c456f0837063afd83b1415447c"},
 ]
 
 [[package]]
