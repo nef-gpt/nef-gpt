@@ -15,6 +15,7 @@ dependencies = [
     "vector-quantize-pytorch>=1.15.6",
     "ipykernel>=6.29.5",
     "einops>=0.8.0",
+    "wandb>=0.17.7",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"

@@ -43,6 +43,15 @@ class NefGPT(pl.LightningModule):
     def training_step(self, batch, batch_idx) -> torch.Tensor:
         X, Y = batch
         _, loss = self.model(X, Y)
+        self.log("train/loss", loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx) -> torch.Tensor:
+        X, Y = batch
+        _, loss = self.model(X, Y)
+        self.log("val/loss", loss)
+
+        # TODO: Metrics as proposed in report
         return loss
 
     def configure_optimizers(self):

@@ -1,6 +1,7 @@
 from data.loader import ShapeNetData, ShapeNetDataConfig
 from nef_gpt import NefGPT, NanoGPTConfig, OptimizerConfig, LRConfig
 from lightning import Trainer
+from lightning.pytorch.loggers import WandbLogger
 
 
 def main():
@@ -11,12 +12,28 @@ def main():
     )
 
     model = NefGPT(
-        config=NanoGPTConfig.from_preset("small"),
+        config=NanoGPTConfig.from_preset(
+            "extra_small", data.get_tokenizer(), data.get_sequence_length()
+        ),
         optimizer_config=OptimizerConfig(),
         lr_config=LRConfig(),
     )
 
-    trainer = Trainer(max_epochs=100)
+    logger = WandbLogger(project="nef-gpt")
+
+    # This adds additional logging on wandb for the model (gradients and topology)
+    logger.watch(model)
+
+    trainer = Trainer(
+        max_epochs=5,
+        # Used to limit the number of batches for testing and initial overfitting
+        limit_train_batches=8,
+        limit_val_batches=2,
+        # Logging stuff
+        log_every_n_steps=2,
+        logger=logger,
+        profiler="simple",
+    )
     trainer.fit(model, datamodule=data)
 
 

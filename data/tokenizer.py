@@ -25,7 +25,7 @@ class Tokenizer(abc.ABC):
 class ScalarTokenizer(Tokenizer):
     @staticmethod
     def load_from_file(file_path: str, device):
-        rq_dict = torch.load(file_path, map_location=device)
+        rq_dict = torch.load(file_path, map_location=device, weights_only=False)
 
         state_dict = rq_dict["state_dict"]
         rq_config = rq_dict["rq_config"]

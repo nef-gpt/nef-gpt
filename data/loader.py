@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 import lightning as pl
 import os
 import torch
@@ -23,6 +23,7 @@ class ShapeNetDataConfig:
     tmp_folder: str = "tmp"
     batch_size: int = 2
     force_recompute: bool = False
+    # number_of_samples: Optional[int] = None
 
 
 class ShapeNetData(pl.LightningModule):
@@ -30,12 +31,26 @@ class ShapeNetData(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-    def prepare_data(self):
+    def get_tokenizer(self):
+        if not hasattr(self, "tokenizer"):
+            self.tokenizer = ScalarTokenizer.load_from_file(
+                self.hparams.data_config.vector_quantize_pth, self.device
+            )
+        return self.tokenizer
 
-        # Token transform
-        self.tokenizer = ScalarTokenizer.load_from_file(
-            self.hparams.data_config.vector_quantize_pth, self.device
+    def get_sequence_length(self):
+        # load a single sample to get the sequence length
+        file = os.listdir(self.hparams.data_config.mlps_folder)[0]
+        out = torch.load(
+            f"{self.hparams.data_config.mlps_folder}/{file}",
+            map_location=self.device,
+            weights_only=True,
         )
+        return sum([t.numel() for t in out["state_dict"].values()])
+
+    def prepare_data(self):
+        # Token transform
+        self.get_tokenizer()
         self.token_transform = TokenTransform3D(self.tokenizer)
 
         dataset = ShapeNetDataset(
@@ -75,26 +90,35 @@ class ShapeNetData(pl.LightningModule):
     def setup(self, stage: str):
         # load it back here
         # stage is {fit,validate,test,predict}
+        limit = None  # self.hparams.data_config.number_of_samples
         if stage == "fit":
             data = torch.load(
                 f"{self.hparams.data_config.tmp_folder}/train.pt", weights_only=True
             )
-            self.train_data = torch.utils.data.TensorDataset(data[0], data[1])
+            self.train_data = torch.utils.data.TensorDataset(
+                data[0, :limit], data[1, :limit]
+            )
 
             data = torch.load(
                 f"{self.hparams.data_config.tmp_folder}/val.pt", weights_only=True
             )
-            self.val_data = torch.utils.data.TensorDataset(data[0], data[1])
+            self.val_data = torch.utils.data.TensorDataset(
+                data[0, :limit], data[1, :limit]
+            )
         elif stage == "test":
             data = torch.load(
                 f"{self.hparams.data_config.tmp_folder}/test.pt", weights_only=True
             )
-            self.test_data = torch.utils.data.TensorDataset(data[0], data[1])
+            self.test_data = torch.utils.data.TensorDataset(
+                data[0, :limit], data[1, :limit]
+            )
         elif stage == "validate":
             data = torch.load(
                 f"{self.hparams.data_config.tmp_folder}/val.pt", weights_only=True
             )
-            self.val_data = torch.utils.data.TensorDataset(data[0], data[1])
+            self.val_data = torch.utils.data.TensorDataset(
+                data[0, :limit], data[1, :limit]
+            )
         else:
             raise ValueError(f"Stage {stage} not recognized")
 
@@ -103,11 +127,17 @@ class ShapeNetData(pl.LightningModule):
             self.train_data,
             batch_size=self.hparams.data_config.batch_size,
             shuffle=True,
+            num_workers=9,
+            persistent_workers=True,
         )
 
     def val_dataloader(self):
         return torch.utils.data.DataLoader(
-            self.val_data, batch_size=self.hparams.data_config.batch_size, shuffle=False
+            self.val_data,
+            batch_size=self.hparams.data_config.batch_size,
+            shuffle=False,
+            num_workers=9,
+            persistent_workers=True,
         )
 
     def test_dataloader(self):

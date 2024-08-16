@@ -165,3 +165,6 @@ datasets/
 weights/
 lightning_logs/
 tmp/
+
+nef-gpt
+wandb

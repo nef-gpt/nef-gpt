@@ -7,6 +7,8 @@ from torch import nn
 import torch.nn.functional as F
 import torch
 import tqdm
+
+from data.tokenizer import Tokenizer
 from .components import Block, LayerNorm, PositionalEncoding
 
 
@@ -29,10 +31,14 @@ class NanoGPTConfig:
     )
 
     @staticmethod
-    def from_preset(type: str):
-        return presets[type]
+    def from_preset(type: str, tokenizer: Tokenizer, seq_len: int):
+        base = presets[type]
+        base.vocab_size = tokenizer.vocab_size()
+        base.block_size = seq_len
+        return base
 
 
+# These are overridden in the `from_preset` method
 block_size = 3712
 cb_size = 127
 presets = {
@@ -41,6 +47,15 @@ presets = {
         block_size=block_size,
         n_head=16,
         n_layer=8,
+        vocab_size=cb_size + 1,
+        dropout=0.0,
+        max_len=None,
+    ),
+    "extra_small": NanoGPTConfig(
+        n_embd=128,
+        block_size=block_size,
+        n_head=8,
+        n_layer=4,
         vocab_size=cb_size + 1,
         dropout=0.0,
         max_len=None,
