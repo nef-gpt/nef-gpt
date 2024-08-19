@@ -16,10 +16,14 @@ from data.transforms import TokenTransform3D
 # This module functions as following:
 
 
+default_vq_path = "./weights/rq_search_results/shapenet_retrained_learnable_rq_model_dim_1_vocab_127_batch_size_16_threshold_ema_dead_code_0_kmean_iters_1_num_quantizers_1_use_init_False.pth"
+default_mlps_path = "./datasets/shapenet_nef_2/pretrained"
+
+
 @dataclass
 class ShapeNetDataConfig:
-    mlps_folder: str
-    vector_quantize_pth: str
+    mlps_folder: str = default_mlps_path
+    vector_quantize_pth: str = default_vq_path
     tmp_folder: str = "tmp"
     batch_size: int = 2
     force_recompute: bool = False

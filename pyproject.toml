@@ -17,6 +17,7 @@ dependencies = [
     "einops>=0.8.0",
     "wandb>=0.17.7",
     "jsonargparse[signatures]>=4.32.0",
+    "deepspeed>=0.14.5",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"
