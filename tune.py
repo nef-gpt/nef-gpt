@@ -62,7 +62,7 @@ def train_func(config, working_dir=None):
         accelerator="auto",
         # strategy=RayFSDPStrategy(),
         # strategy=RayDDPStrategy(),
-        strategy=RayDeepSpeedStrategy(),
+        # strategy=RayDeepSpeedStrategy(),
         callbacks=[RayTrainReportCallback(), lr_monitor],
         plugins=[RayLightningEnvironment()],
         enable_progress_bar=False,
@@ -73,7 +73,7 @@ def train_func(config, working_dir=None):
         deterministic=True,
         overfit_batches=24,
     )
-    trainer = prepare_trainer(trainer)
+    # trainer = prepare_trainer(trainer)
     trainer.fit(model, datamodule=dm)
 
 
@@ -88,7 +88,7 @@ def main():
     num_epochs = 5
     num_samples = 20
 
-    scaling_config = ScalingConfig(num_workers=2)
+    scaling_config = ScalingConfig(num_workers=1)
     run_config = RunConfig(
         checkpoint_config=CheckpointConfig(
             num_to_keep=2,
