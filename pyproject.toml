@@ -15,6 +15,11 @@ dependencies = [
     "jsonargparse[signatures]>=4.32.0",
     "deepspeed>=0.14.5",
     "bayesian-optimization>=1.5.1",
+    "matplotlib>=3.9.2",
+    "pyrender>=0.1.45",
+    "trimesh>=4.4.7",
+    "plyfile>=1.1",
+    "scikit-image>=0.24.0",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"
