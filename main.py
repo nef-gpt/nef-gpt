@@ -1,5 +1,5 @@
 from data.loader import ShapeNetData, ShapeNetDataConfig
-from nef_gpt import NefGPT, NanoGPTConfig, OptimizerConfig, LRConfig
+from models.nef_gpt import NefGPT, NanoGPTConfig, OptimizerConfig, LRConfig
 from lightning import Trainer
 from lightning.pytorch.loggers import WandbLogger
 

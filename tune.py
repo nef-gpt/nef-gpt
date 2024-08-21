@@ -19,7 +19,7 @@ import torch
 
 from data.loader import ShapeNetData, ShapeNetDataConfig
 from models.nano_gpt import NanoGPTConfig
-from nef_gpt import LRConfig, NefGPT, OptimizerConfig
+from models.nef_gpt import LRConfig, NefGPT, OptimizerConfig
 
 tune_settings = {
     "max_epochs": 50,
