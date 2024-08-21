@@ -25,7 +25,7 @@ class ShapeNetDataConfig:
     mlps_folder: str = default_mlps_path
     vector_quantize_pth: str = default_vq_path
     tmp_folder: str = "tmp"
-    batch_size: int = 2
+    batch_size: int = 16
     force_recompute: bool = False
     # number_of_samples: Optional[int] = None
 
@@ -153,3 +153,7 @@ class ShapeNetData(pl.LightningModule):
 
     def predict_dataloader(self):
         raise NotImplementedError
+
+    def on_exception(self, exception: Exception) -> None:
+        print(exception)
+        print("Exception caught")
